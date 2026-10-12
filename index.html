@@ -37,7 +37,7 @@ svg.ch{width:100%;height:110px;margin-top:10px}
 .live{display:flex;align-items:center;gap:10px;margin:16px 0}.dot{width:10px;height:10px;border-radius:50%;background:var(--mute)}.on .dot{background:#4ade80;animation:p 1.2s infinite}
 @keyframes p{50%{box-shadow:0 0 0 8px transparent;opacity:.5}}
 .gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}.gal svg{width:100%;height:auto;border-radius:16px;border:1px solid var(--line)}
-.sp{animation:spin 4s linear infinite;transform-origin:var(--ox) var(--oy)}.sp.f{animation-duration:1.6s}@keyframes spin{to{transform:rotate(360deg)}}
+.sp{animation:spin 4s linear infinite;transform-origin:var(--ox) var(--oy)}.sp.f{animation-duration:1.6s}@keyframes spin{to{transform:rotate(360deg)}}.fl{stroke-dasharray:8 8;animation:fl .8s linear infinite}@keyframes fl{to{stroke-dashoffset:-16}}.sm{animation:rise 2.6s linear infinite}@keyframes rise{from{transform:translateY(0);opacity:.8}to{transform:translateY(-22px);opacity:0}}
 details{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:10px 0}summary{cursor:pointer;font:600 1.05rem Sora}details p{color:var(--mute);margin:.6em 0 0}
 .tilt{transition:transform .2s;transform-style:preserve-3d}
 #wel{position:fixed;inset:0;z-index:50;display:none;place-items:center;background:rgba(3,10,16,.8);padding:18px}#wel.o{display:grid}
@@ -57,7 +57,7 @@ footer{padding:36px 5vw;color:var(--mute);border-top:1px solid var(--line);text-
 <nav><b>TB<span>yieldo</span></b><a class="h" href="#predict">Predict</a><a class="h" href="#turbines">Turbines</a><a class="h" href="#about">About</a><a href="#help">Need help</a><a href="#" id="th" aria-label="Switch light or dark theme">◐</a></nav>
 
 <header class="hero">
-<canvas id="c3d" aria-label="3D wind turbines turning"></canvas>
+<canvas id="c3d" aria-label="3D gas turbines running"></canvas>
 <div class="t"><h1>Know your turbine's <span>power</span> before it makes it.</h1>
 <p>TByieldo estimates how much electricity a gas turbine plant will produce, using four simple weather and pressure readings.</p>
 <a class="btn" href="#predict">Try the predictor</a><button class="btn g" id="tour">Show me how (2 min tour)</button></div>
@@ -75,83 +75,4 @@ footer{padding:36px 5vw;color:var(--mute);border-top:1px solid var(--line);text-
 </div></section>
 
 <section id="turbines"><h2>Meet the machines</h2>
-<p class="lead">Gas turbines burn fuel to spin a shaft. Wind turbines catch moving air. Both turn motion into electricity.</p>
-<div class="gal" id="gal"></div></section>
-
-<section id="about"><h2>About this project</h2>
-<p class="lead">TByieldo comes from a machine learning project for the power grid. The goal: predict gas turbine energy output with regression models, check them carefully and improve them with ensemble learning.</p>
-<div class="gal">
-<div class="panel"><h3>Regression modelling</h3>Models that estimate a number (power in MW) from inputs.</div>
-<div class="panel"><h3>Feature engineering</h3>Choosing and cleaning the right inputs before training.</div>
-<div class="panel"><h3>Evaluation</h3>Measured with standard regression metrics such as RMSE and R².</div>
-<div class="panel"><h3>Ensembles and reliability</h3>Combining models, validating, studying errors and monitoring over time.</div>
-</div>
-<p class="lead" style="margin-top:22px">Note: this demo runs a simple linear formula in your browser (the classic fit for the Combined Cycle Power Plant data), so it works offline and loads fast. Plug in the trained ensemble model for production numbers.</p></section>
-
-<section id="help"><h2>Need help?</h2><p class="lead">Tap any term for a plain-English explanation.</p><div id="gl"></div></section>
-
-<footer>TByieldo · Machine learning for the power grid</footer>
-<a class="btn fab" href="#help">❓ Need help</a>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
-const F=[
-{k:'at',n:'Air temperature',u:'°C',min:2,max:37,v:20,s:.1,h:'How hot the air is outside. Hot air is thinner, so turbines make less power.'},
-{k:'v',n:'Exhaust vacuum',u:'cm Hg',min:25,max:82,v:54,s:.1,h:'How strongly steam is pulled out after it spins the turbine. Think of a vacuum cleaner.'},
-{k:'ap',n:'Air pressure',u:'mbar',min:993,max:1033,v:1013,s:.1,h:'How hard the air presses down. More pressure packs more air in, which helps a bit.'},
-{k:'rh',n:'Humidity',u:'%',min:26,max:100,v:73,s:.1,h:'How damp the air is. Very damp air slightly lowers output.'}];
-const S={};F.forEach(f=>S[f.k]=f.v);
-const ctl=document.getElementById('ctl');
-F.forEach(f=>{ctl.insertAdjacentHTML('beforeend',`<div class="row"><label for="i_${f.k}">${f.n}<output id="o_${f.k}"></output></label><input type="range" id="i_${f.k}" min="${f.min}" max="${f.max}" step="${f.s}" value="${f.v}"><small>${f.h}</small></div>`);
-document.getElementById('i_'+f.k).addEventListener('input',e=>{S[f.k]=+e.target.value;upd()})});
-const hist=[];let spin=.03;
-function predict(){return 454.365-1.9775*S.at-.2339*S.v+.0621*S.ap-.1581*S.rh}
-function upd(){F.forEach(f=>{document.getElementById('o_'+f.k).textContent=S[f.k].toFixed(1)+' '+f.u;document.getElementById('i_'+f.k).value=S[f.k]});
-const p=Math.max(420,Math.min(495,predict()));pe.textContent=p.toFixed(1);
-const pct=(p-420)/75*100;gb.style.width=pct+'%';
-msg.textContent=pct>66?'Strong output. Cool, dry conditions help.':pct>33?'Normal output for these conditions.':'Low output. Heat and vacuum are pulling it down.';
-spin=.01+pct/100*.07;hist.push(p);if(hist.length>30)hist.shift();
-pl.setAttribute('points',hist.map((y,i)=>`${i*300/29},${105-(y-420)/75*100}`).join(' '));
-document.querySelectorAll('.sp').forEach(e=>e.classList.toggle('f',pct>50))}
-let timer=null;
-lb.onclick=()=>{if(timer){clearInterval(timer);timer=null;lv.classList.remove('on');lb.textContent='Start live mode';return}
-lv.classList.add('on');lb.textContent='Stop live mode';
-timer=setInterval(()=>{F.forEach(f=>{const r=(f.max-f.min)*.04;S[f.k]=Math.min(f.max,Math.max(f.min,S[f.k]+(Math.random()-.5)*2*r))});upd()},1200)};
-function tsvg(c1,c2,sky){return `<svg viewBox="0 0 300 220" role="img" aria-label="Wind turbine illustration"><defs><linearGradient id="g${c1}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset="1" stop-color="${sky[1]}"/></linearGradient></defs><rect width="300" height="220" fill="url(#g${c1})"/><circle cx="240" cy="50" r="22" fill="#ffd27a" opacity=".85"/><path d="M0 190 Q80 165 160 185 T300 178 V220 H0Z" fill="#17323f"/><path d="M146 80 L154 80 L158 190 L142 190Z" fill="#e8f1f7"/>
-<g class="sp" style="--ox:150px;--oy:78px"><g fill="#f4fafd"><path d="M150 78 L146 10 L154 10Z"/><path d="M150 78 L212 112 L208 118Z"/><path d="M150 78 L88 112 L92 118Z"/></g></g><circle cx="150" cy="78" r="7" fill="${c2}"/></svg>`}
-gal.innerHTML=tsvg(1,'#5ad1ff',['#1b4a6b','#0a1420'])+tsvg(2,'#ffb347',['#7a3b2e','#1a1020'])+tsvg(3,'#4ade80',['#0f5c5c','#07161e'])+
-`<svg viewBox="0 0 300 220" role="img" aria-label="Gas turbine plant illustration"><rect width="300" height="220" fill="#0f2231"/><rect x="30" y="110" width="150" height="60" rx="8" fill="#2c4a60"/><rect x="40" y="120" width="40" height="40" fill="#5ad1ff" opacity=".8"/><g class="sp" style="--ox:60px;--oy:140px"><path d="M60 140h-18M60 140h18M60 140v-18M60 140v18" stroke="#0a1420" stroke-width="4"/></g><rect x="190" y="70" width="34" height="100" fill="#3b5a70"/><rect x="236" y="40" width="22" height="130" fill="#3b5a70"/><path d="M247 36q-8-14 4-24M225 66q-8-14 4-24" stroke="#9ab0c2" stroke-width="5" fill="none" opacity=".6"/><rect y="170" width="300" height="50" fill="#17323f"/></svg>`;
-const GL=[['Regression','A model that predicts a number, like megawatts, from other numbers.'],['Feature','One input the model looks at, such as air temperature.'],['Feature engineering','Picking, cleaning and reshaping inputs so the model learns better.'],['MW (megawatt)','A unit of power. One MW can run roughly a thousand homes.'],['RMSE','Average size of the model\'s mistakes in MW. Lower is better.'],['MAE','Typical gap between prediction and truth. Lower is better.'],['R² score','How much of the ups and downs the model explains. 1 is perfect, 0 is useless.'],['Ensemble learning','Asking many models and combining their answers, like a team vote.'],['Overfitting','When a model memorises old data and fails on new data.'],['Validation','Testing the model on data it has never seen before.'],['Error analysis','Looking at where the model is wrong, to find out why.'],['Performance monitoring','Watching a live model over time to catch it getting worse.'],['Exhaust vacuum','Suction that pulls steam out of the turbine. Stronger suction usually means more power.'],['Combined cycle plant','A plant that uses hot gas and then the leftover steam to spin turbines, making extra power.']];
-gl.innerHTML=GL.map(g=>`<details><summary>${g[0]}</summary><p>${g[1]}</p></details>`).join('');
-const TS=[['👋','Hi friend! I\'m TByieldo','I tell you how much electricity a big turbine can make. It\'s like a magic guess machine.'],['🎚️','Step 1: slide the sliders','Each slider is a knob for the weather. Slide it left or right with your finger or mouse.'],['⚡','Step 2: watch the big number','The orange number is the electricity, in MW. Bigger number means more power.'],['🌀','Step 3: see it spin','The turbines on the page spin faster when more power is made. Try Live mode for moving numbers.'],['❓','Stuck? Tap Need help','Hard words live in the Need help part. Tap a word and I explain it simply.']];
-let ti=0;const W=document.getElementById('wel');
-function sh(){we.textContent=TS[ti][0];wt.textContent=TS[ti][1];wp.textContent=TS[ti][2];wb.style.visibility=ti?'visible':'hidden';wn.textContent=ti==TS.length-1?'Start!':'Next'}
-function opn(){ti=0;sh();W.classList.add('o');wn.focus()}function cls(){W.classList.remove('o');try{localStorage.setItem('tby','1')}catch(e){}}
-wn.onclick=()=>{ti<TS.length-1?(ti++,sh()):cls()};wb.onclick=()=>{ti--;sh()};ws.onclick=e=>{e.preventDefault();cls()};tour.onclick=opn;
-document.addEventListener('keydown',e=>{if(e.key==='Escape')cls()});
-th.onclick=e=>{e.preventDefault();const r=document.documentElement,d=getComputedStyle(r).getPropertyValue('--bg').trim()==='#0a1420';r.dataset.theme=d?'light':'dark'};
-let seen=false;try{seen=localStorage.getItem('tby')}catch(e){}if(!seen)opn();
-upd();
-// 3D scene
-(function(){if(!window.THREE)return;const cv=document.getElementById('c3d'),R=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true}),sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(50,1,.1,200);
-sc.fog=new THREE.Fog(0x0a1420,20,70);sc.add(new THREE.AmbientLight(0x88aacc,.7));const dl=new THREE.DirectionalLight(0xffffff,1);dl.position.set(5,10,8);sc.add(dl);
-const mw=new THREE.MeshStandardMaterial({color:0xe8f1f7,roughness:.5}),ma=new THREE.MeshStandardMaterial({color:0x5ad1ff,emissive:0x0a4a66});
-const rotors=[];
-function mk(x,z,s){const g=new THREE.Group();const t=new THREE.Mesh(new THREE.CylinderGeometry(.12,.25,6,16),mw);t.position.y=3;g.add(t);
-const n=new THREE.Mesh(new THREE.BoxGeometry(.5,.4,.9),mw);n.position.y=6;g.add(n);
-const r=new THREE.Group();r.position.set(0,6,.55);const h=new THREE.Mesh(new THREE.SphereGeometry(.22,16,16),ma);r.add(h);
-for(let i=0;i<3;i++){const b=new THREE.Mesh(new THREE.BoxGeometry(.18,3,.04),mw);b.position.y=1.6;const p=new THREE.Group();p.add(b);p.rotation.z=i*Math.PI*2/3;r.add(p)}
-g.add(r);g.position.set(x,0,z);g.scale.setScalar(s);sc.add(g);rotors.push(r)}
-[[3,-2,1.3],[-1,-8,1],[8,-10,1],[-8,-16,1],[14,-18,1],[-14,-26,1],[0,-24,1]].forEach(a=>mk(...a));
-const gr=new THREE.GridHelper(120,60,0x1e5a78,0x14303f);sc.add(gr);
-const pg=new THREE.BufferGeometry(),pa=new Float32Array(300);for(let i=0;i<300;i++)pa[i]=(Math.random()-.5)*50;pg.setAttribute('position',new THREE.BufferAttribute(pa,3));
-const pts=new THREE.Points(pg,new THREE.PointsMaterial({color:0x5ad1ff,size:.12}));sc.add(pts);
-let mx=0,my=0;addEventListener('pointermove',e=>{mx=e.clientX/innerWidth-.5;my=e.clientY/innerHeight-.5});
-function rs(){const w=cv.clientWidth,h=cv.clientHeight;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}addEventListener('resize',rs);rs();
-const nar=()=>innerWidth<700;
-(function a(){requestAnimationFrame(a);rotors.forEach((r,i)=>r.rotation.z-=spin*(1+i%3*.15));
-cam.position.set(nar()?1:5+mx*3,4.5-my*1.5,nar()?16:12);cam.lookAt(nar()?0:3,4,-6);
-const p=pg.attributes.position.array;for(let i=0;i<300;i+=3){p[i]+=.04;if(p[i]>25)p[i]=-25}pg.attributes.position.needsUpdate=true;R.render(sc,cam)})()})();
-</script>
-</body>
-</html>
+<p class="lead">A gas turbine pulls in air, squeezes it, burns fuel and spins a
