@@ -1,4 +1,5 @@
 TByieldo is a web front end for a machine learning project in the energy sector. The project builds regression models that estimate gas turbine energy output (in MW) and evaluates them with sound methodology. The site lets anyone try the predictor without any technical background.
+https://tbyieldo.vercel.app/
 
 Features
 Friendly first-time tour: a short welcome that explains the site in very simple words.
